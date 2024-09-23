@@ -1,0 +1,25 @@
+{
+  "name": "usda-polygons",
+  "version": "1.0.0",
+  "description": "\"# usda-polygons\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/precision-sustainable-ag/usda-polygons.git"
+  },
+  "author": "Rick Hitchcock",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/precision-sustainable-ag/usda-polygons/issues"
+  },
+  "homepage": "https://github.com/precision-sustainable-ag/usda-polygons#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
+    "pg": "^8.13.0"
+  }
+}
