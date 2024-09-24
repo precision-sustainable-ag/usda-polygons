@@ -78,6 +78,28 @@ const routeMLRA = (req, res) => {
   `);
 }; // routeMLRA
 
+const routeWatershed = (req, res) => {
+  query(req, res, `
+    SELECT
+      huc12,
+      watershed,
+      huc10,
+      huc10name,
+      huc8,
+      huc8name,
+      huc6,
+      huc6name,
+      huc4,
+      huc4name,
+      huc2,
+      huc2name,
+      Box2D(geometry) as bbox
+      POLYGON
+    FROM polygons.watersheds
+    WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+  `);
+}; // routeWatershed
+
 const routeInfo = (req, res) => {
   query(req, res, `
     SELECT
@@ -105,13 +127,29 @@ const routeInfo = (req, res) => {
       hardiness_zones.zone,
       hardiness_zones.trange,
       hardiness_zones.zonetitle,
-      Box2D(hardiness_zones.geometry) as hardiness_bbox
+      Box2D(hardiness_zones.geometry) as hardiness_bbox,
+
+      watersheds.huc12,
+      watersheds.watershed,
+      watersheds.huc10,
+      watersheds.huc10name,
+      watersheds.huc8,
+      watersheds.huc8name,
+      watersheds.huc6,
+      watersheds.huc6name,
+      watersheds.huc4,
+      watersheds.huc4name,
+      watersheds.huc2,
+      watersheds.huc2name,
+      Box2D(watersheds.geometry) as watershed_bbox
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
       ON ST_Contains(mlra.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     LEFT JOIN polygons.hardiness_zones AS hardiness_zones
       ON ST_Contains(hardiness_zones.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LEFT JOIN polygons.watersheds AS watersheds
+      ON ST_Contains(watersheds.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
 
     WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
   `);
@@ -122,4 +160,5 @@ module.exports = {
   routeCounty,
   routeHardiness,
   routeMLRA,
+  routeWatershed,
 };
