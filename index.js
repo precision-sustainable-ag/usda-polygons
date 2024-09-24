@@ -25,6 +25,7 @@ app.use(express.static(`${__dirname}/static`, { dotfiles: 'allow' }));
 // routes
 const polygons = require('./polygons');
 app.all('/mlra', polygons.routeMLRA);
+app.all('/county', polygons.routeCounty);
 
 // start the server
 app.listen(80, () => {
