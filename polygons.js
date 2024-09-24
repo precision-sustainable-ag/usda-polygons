@@ -47,6 +47,21 @@ const routeCounty = (req, res) => {
   `);
 }; // routeCounty
 
+const routeHardiness = (req, res) => {
+  query(req, res, `
+    SELECT
+      ogc_fid,
+      id,
+      gridcode,
+      zone,
+      trange,
+      zonetitle
+      POLYGON
+    FROM polygons.hardiness_zones
+    WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+  `);
+}; // routeHardiness
+
 const routeMLRA = (req, res) => {
   query(req, res, `
     SELECT
@@ -79,11 +94,18 @@ const routeInfo = (req, res) => {
       mlra.mlrarsym,
       mlra.name as mlra_name,
       mlra.lrrsym,
-      mlra.lrrname
+      mlra.lrrname,
+
+      hardiness_zones.gridcode,
+      hardiness_zones.zone,
+      hardiness_zones.trange,
+      hardiness_zones.zonetitle
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
-    ON ST_Contains(mlra.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+      ON ST_Contains(mlra.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LEFT JOIN polygons.hardiness_zones AS hardiness_zones
+      ON ST_Contains(hardiness_zones.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
 
     WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
   `);
@@ -92,5 +114,6 @@ const routeInfo = (req, res) => {
 module.exports = {
   routeInfo,
   routeCounty,
+  routeHardiness,
   routeMLRA,
 };

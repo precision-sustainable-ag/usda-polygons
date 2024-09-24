@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: psausdapolygons 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psausdapolygons
+  template:
+    metadata:
+      labels:
+        app: psausdapolygons 
+    spec:
+      containers:
+        - name: psausdapolygons 
+          image: containerregistry4pd7i.azurecr.io/psausdapolygons
+          ports:
+          - containerPort: 80
