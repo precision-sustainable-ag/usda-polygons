@@ -60,7 +60,37 @@ const routeMLRA = (req, res) => {
   `);
 }; // routeMLRA
 
+const routeInfo = (req, res) => {
+  query(req, res, `
+    SELECT
+      counties.statefips,
+      counties.countyfips,
+      counties.countyns,
+      counties.affgeoid,
+      counties.geoid,
+      counties.county,
+      counties.namelsad,
+      counties.state_code,
+      counties.state,
+      counties.lsad,
+      counties.aland,
+      counties.awater,
+
+      mlra.mlrarsym,
+      mlra.name as mlra_name,
+      mlra.lrrsym,
+      mlra.lrrname
+
+    FROM polygons.counties AS counties
+    LEFT JOIN polygons.mlra AS mlra
+    ON ST_Contains(mlra.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+
+    WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+  `);
+}; // routeInfo
+
 module.exports = {
-  routeMLRA,
+  routeInfo,
   routeCounty,
+  routeMLRA,
 };
