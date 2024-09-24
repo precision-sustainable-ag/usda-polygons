@@ -31,16 +31,9 @@ const routeCounty = (req, res) => {
     SELECT
       statefips,
       countyfips,
-      countyns,
-      affgeoid,
-      geoid,
       county,
-      namelsad,
       state_code,
       state,
-      lsad,
-      aland,
-      awater,
       Box2D(geometry) as bbox
       POLYGON
     FROM polygons.counties
@@ -56,7 +49,6 @@ const routeHardiness = (req, res) => {
       gridcode,
       zone,
       trange,
-      zonetitle,
       Box2D(geometry) as bbox
       POLYGON
     FROM polygons.hardiness_zones
@@ -105,16 +97,9 @@ const routeInfo = (req, res) => {
     SELECT
       counties.statefips,
       counties.countyfips,
-      counties.countyns,
-      counties.affgeoid,
-      counties.geoid,
       counties.county,
-      counties.namelsad,
       counties.state_code,
       counties.state,
-      counties.lsad,
-      counties.aland,
-      counties.awater,
       Box2D(counties.geometry) as county_bbox,
 
       mlra.mlrarsym,
@@ -126,7 +111,6 @@ const routeInfo = (req, res) => {
       hardiness_zones.gridcode,
       hardiness_zones.zone,
       hardiness_zones.trange,
-      hardiness_zones.zonetitle,
       Box2D(hardiness_zones.geometry) as hardiness_bbox,
 
       watersheds.huc12,
