@@ -28,6 +28,7 @@ app.all('/info', polygons.routeInfo);
 app.all('/county', polygons.routeCounty);
 app.all('/hardiness', polygons.routeHardiness);
 app.all('/mlra', polygons.routeMLRA);
+app.all('/watershed', polygons.routeWatershed);
 
 // start the server
 app.listen(80, () => {
