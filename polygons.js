@@ -40,7 +40,8 @@ const routeCounty = (req, res) => {
       state,
       lsad,
       aland,
-      awater
+      awater,
+      Box2D(geometry) as bbox
       POLYGON
     FROM polygons.counties
     WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
@@ -55,7 +56,8 @@ const routeHardiness = (req, res) => {
       gridcode,
       zone,
       trange,
-      zonetitle
+      zonetitle,
+      Box2D(geometry) as bbox
       POLYGON
     FROM polygons.hardiness_zones
     WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
@@ -68,7 +70,8 @@ const routeMLRA = (req, res) => {
       mlrarsym,
       name,
       lrrsym,
-      lrrname
+      lrrname,
+      Box2D(geometry) as bbox
       POLYGON
     FROM polygons.mlra
     WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
@@ -90,16 +93,19 @@ const routeInfo = (req, res) => {
       counties.lsad,
       counties.aland,
       counties.awater,
+      Box2D(counties.geometry) as county_bbox,
 
       mlra.mlrarsym,
       mlra.name as mlra_name,
       mlra.lrrsym,
       mlra.lrrname,
+      Box2D(mlra.geometry) as mlra_bbox,
 
       hardiness_zones.gridcode,
       hardiness_zones.zone,
       hardiness_zones.trange,
-      hardiness_zones.zonetitle
+      hardiness_zones.zonetitle,
+      Box2D(hardiness_zones.geometry) as hardiness_bbox
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
