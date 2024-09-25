@@ -141,7 +141,7 @@ const routeInfo = (req, res) => {
 
       ecoregions.ecoregion_code,
       ecoregions.ecoregion,
-      Box2D(ecoregions.geometry) as bbox
+      Box2D(ecoregions.geometry) as ecoregion_bbox
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
@@ -158,9 +158,9 @@ const routeInfo = (req, res) => {
 }; // routeInfo
 
 module.exports = {
-  routeEcoregion,
   routeInfo,
   routeCounty,
+  routeEcoregion,
   routeHardiness,
   routeMLRA,
   routeWatershed,
