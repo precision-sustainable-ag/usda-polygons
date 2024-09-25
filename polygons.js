@@ -44,8 +44,8 @@ const routeCounty = (req, res) => {
 const routeEcoregion = (req, res) => {
   query(req, res, `
     SELECT
-      na_l1code,
-      na_l1name,
+      ecoregion_code,
+      ecoregion,
       Box2D(geometry) as bbox
       POLYGON
     FROM polygons.ecoregions
@@ -139,8 +139,8 @@ const routeInfo = (req, res) => {
       watersheds.huc2name,
       Box2D(watersheds.geometry) as watershed_bbox,
 
-      ecoregions.na_l1code,
-      ecoregions.na_l1name,
+      ecoregions.ecoregion_code,
+      ecoregions.ecoregion,
       Box2D(ecoregions.geometry) as bbox
 
     FROM polygons.counties AS counties
