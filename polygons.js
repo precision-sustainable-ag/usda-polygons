@@ -41,6 +41,18 @@ const routeCounty = (req, res) => {
   `);
 }; // routeCounty
 
+const routeEcoregion = (req, res) => {
+  query(req, res, `
+    SELECT
+      ecoregion_code,
+      ecoregion,
+      Box2D(geometry) as bbox
+      POLYGON
+    FROM polygons.ecoregions
+    WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+  `);
+}; // routeEcoregion
+
 const routeHardiness = (req, res) => {
   query(req, res, `
     SELECT
@@ -125,7 +137,11 @@ const routeInfo = (req, res) => {
       watersheds.huc4name,
       watersheds.huc2,
       watersheds.huc2name,
-      Box2D(watersheds.geometry) as watershed_bbox
+      Box2D(watersheds.geometry) as watershed_bbox,
+
+      ecoregions.ecoregion_code,
+      ecoregions.ecoregion,
+      Box2D(ecoregions.geometry) as bbox
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
@@ -134,12 +150,15 @@ const routeInfo = (req, res) => {
       ON ST_Contains(hardiness_zones.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     LEFT JOIN polygons.watersheds AS watersheds
       ON ST_Contains(watersheds.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LEFT JOIN polygons.ecoregions AS ecoregions
+      ON ST_Contains(ecoregions.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
 
     WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
   `);
 }; // routeInfo
 
 module.exports = {
+  routeEcoregion,
   routeInfo,
   routeCounty,
   routeHardiness,
