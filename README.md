@@ -30,6 +30,8 @@ ___
 
 ## Importing Steps
 
+Below are instructions for importing ecoregions.  The other datasources would be imported similarly.
+
 ### Ecoregions
 
 #### 1. Extract the Shapefile
