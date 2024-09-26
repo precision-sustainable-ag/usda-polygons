@@ -86,7 +86,7 @@ const routeMLRA = (req, res) => {
   query(req, res, `
     SELECT
       mlrarsym,
-      name,
+      mlra_name,
       lrrsym,
       lrrname,
       Box2D(geometry) as bbox
@@ -129,7 +129,7 @@ const routeInfo = (req, res) => {
       Box2D(counties.geometry) as county_bbox,
 
       mlra.mlrarsym,
-      mlra.name as mlra_name,
+      mlra.mlra_name,
       mlra.lrrsym,
       mlra.lrrname,
       Box2D(mlra.geometry) as mlra_bbox,
