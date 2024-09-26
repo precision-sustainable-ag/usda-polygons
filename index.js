@@ -24,10 +24,14 @@ app.use(express.static(`${__dirname}/static`, { dotfiles: 'allow' }));
 
 // routes
 const polygons = require('./polygons');
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 app.all('/info', polygons.routeInfo);
 app.all('/county', polygons.routeCounty);
 app.all('/ecoregion', polygons.routeEcoregion);
 app.all('/hardiness', polygons.routeHardiness);
+app.all('/lru', polygons.routeLRU);
 app.all('/mlra', polygons.routeMLRA);
 app.all('/watershed', polygons.routeWatershed);
 
