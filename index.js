@@ -33,6 +33,7 @@ app.all('/ecoregion', polygons.routeEcoregion);
 app.all('/hardiness', polygons.routeHardiness);
 app.all('/lru', polygons.routeLRU);
 app.all('/mlra', polygons.routeMLRA);
+app.all('/state', polygons.routeState);
 app.all('/watershed', polygons.routeWatershed);
 
 // start the server
