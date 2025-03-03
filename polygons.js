@@ -3,12 +3,13 @@ const { pool } = require('./pools');
 const query = async (req, res, query) => {
   const lat = +req.query.lat || +req.body.lat;
   const lon = +req.query.lon || +req.body.lon;
-  const point = `POINT(${lon} ${lat})`;
+  const state = req.query.state || req.body.state;
+  const point = state || `POINT(${lon} ${lat})`;
   const polygon = (req.query.polygon || req.body.polygon) === 'true';
 
   query = query.replace('POLYGON', polygon ? ', ST_AsText(geometry) as polygon' : '');
 
-  if (isNaN(lat) || isNaN(lon)) {
+  if (!state && (isNaN(lat) || isNaN(lon))) {
     return res.status(400).send({ error: 'Invalid or missing latitude/longitude' });
   }
 
@@ -96,6 +97,58 @@ const routeMLRA = (req, res) => {
   `);
 }; // routeMLRA
 
+const routeState = (req, res) => {
+  const state = req.query.state || req.body.state
+  if (state) {
+    query(req, res, `
+      SELECT
+        state_code,
+        state,
+        region,
+        division,
+        statefp,
+        statens,
+        geoid,
+        geoidfq,
+        lsad,
+        mtfcc,
+        funcstat,
+        aland,
+        awater,
+        intptlat,
+        intptlon,
+        Box2D(geometry) as bbox
+        POLYGON
+      FROM polygons.us_states
+      WHERE
+        state_code ilike $1 OR state ilike $1
+    `);
+  } else {
+    query(req, res, `
+      SELECT
+        state_code,
+        state,
+        region,
+        division,
+        statefp,
+        statens,
+        geoid,
+        geoidfq,
+        lsad,
+        mtfcc,
+        funcstat,
+        aland,
+        awater,
+        intptlat,
+        intptlon,
+        Box2D(geometry) as bbox
+        POLYGON
+      FROM polygons.us_states
+      WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    `);
+  }
+}; // routeCounty
+
 const routeWatershed = (req, res) => {
   query(req, res, `
     SELECT
@@ -161,7 +214,9 @@ const routeInfo = (req, res) => {
       lru.lru_description,
       lru.seeding_start,
       lru.seeding_end,
-      Box2D(lru.geometry) as lru_bbox
+      Box2D(lru.geometry) as lru_bbox,
+
+      Box2D(states.geometry) as state_bbox
 
     FROM polygons.counties AS counties
     LEFT JOIN polygons.mlra AS mlra
@@ -174,6 +229,8 @@ const routeInfo = (req, res) => {
       ON ST_Contains(ecoregions.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     LEFT JOIN polygons.lru AS lru
       ON ST_Contains(lru.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LEFT JOIN polygons.us_states AS states
+      ON ST_Contains(states.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
 
     WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
   `);
@@ -186,5 +243,6 @@ module.exports = {
   routeHardiness,
   routeLRU,
   routeMLRA,
+  routeState,
   routeWatershed,
 };

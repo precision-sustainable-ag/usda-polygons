@@ -13,6 +13,9 @@ Examples:
 - https://polygons.vegspec.org/hardiness?lat=34.77&lon=-105.54&polygon=true
 - https://polygons.vegspec.org/lru?lat=34.77&lon=-105.54&polygon=true
 - https://polygons.vegspec.org/mlra?lat=34.77&lon=-105.54&polygon=true
+- https://polygons.vegspec.org/state?state=maryland&polygon=true
+- https://polygons.vegspec.org/state?state=MD&polygon=true
+- https://polygons.vegspec.org/state?lat=38.75&lon=-76.85&polygon=true
 - https://polygons.vegspec.org/watershed?lat=34.77&lon=-105.54&polygon=true
 - https://polygons.vegspec.org/info?lat=34.77&lon=-105.54
 
@@ -29,6 +32,8 @@ ___
 - Counties: [Dataset](https://catalog.data.gov/dataset/2023-cartographic-boundary-file-kml-county-and-equivalent-for-united-states-1-500000/resource/2ccd7a0b-0752-4395-87ed-ee3762c37204) - [Documentation](https://www2.census.gov/geo/tiger/GENZ2023/description.pdf)
 - Ecoregions: [Dataset](https://gaftp.epa.gov/EPADataCommons/ORD/Ecoregions/cec_na/na_cec_eco_l1.zip) - [Documentation](https://www.epa.gov/eco-research/ecoregions-north-america)
 - New Mexico LRU: [Dataset](https://aesl.ces.uga.edu/psa/nmlru.zip) - [Documentation](https://docs.google.com/spreadsheets/d/1ydtsy_zM2hTIU1u-dMvi4GNIOt6cHrZt/edit?gid=1559806972#gid=1559806972)
+- Hardiness Zones: [Dataset and Download](https://prism.oregonstate.edu/projects/plant_hardiness_zones.php)
+- States: [Dataset](https://www2.census.gov/geo/tiger/TIGER2024/STATE/)
 ___
 
 ## Importing Steps
