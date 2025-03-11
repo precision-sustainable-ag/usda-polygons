@@ -44,13 +44,14 @@ const routeCounty = (req, res) => {
 
 const routeEcoregion = (req, res) => {
   query(req, res, `
-    SELECT
+    SELECT 
       ecoregion_code,
       ecoregion,
-      Box2D(geometry) as bbox
-      POLYGON
+      Box2D(geometry) as bbox,
+      ST_AsText(geometry) AS polygon
     FROM polygons.ecoregions
-    WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    ORDER BY ST_Distance(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LIMIT 1;
   `);
 }; // routeEcoregion
 
@@ -173,7 +174,17 @@ const routeWatershed = (req, res) => {
 
 const routeInfo = (req, res) => {
   query(req, res, `
-    SELECT
+    WITH closest_ecoregion AS (
+      SELECT 
+        ecoregion_code,
+        ecoregion,
+        Box2D(geometry) as ecoregion_bbox
+      FROM polygons.ecoregions
+      ORDER BY ST_Distance(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+      LIMIT 1
+    )
+    
+    SELECT 
       counties.statefips,
       counties.countyfips,
       counties.county,
@@ -206,9 +217,9 @@ const routeInfo = (req, res) => {
       watersheds.huc2name,
       Box2D(watersheds.geometry) as watershed_bbox,
 
-      ecoregions.ecoregion_code,
-      ecoregions.ecoregion,
-      Box2D(ecoregions.geometry) as ecoregion_bbox,
+      COALESCE(ecoregions.ecoregion_code, closest_ecoregion.ecoregion_code) AS ecoregion_code,
+      COALESCE(ecoregions.ecoregion, closest_ecoregion.ecoregion) AS ecoregion,
+      COALESCE(Box2D(ecoregions.geometry), closest_ecoregion.ecoregion_bbox) AS ecoregion_bbox,
 
       lru.lru,
       lru.lru_description,
@@ -231,8 +242,9 @@ const routeInfo = (req, res) => {
       ON ST_Contains(lru.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     LEFT JOIN polygons.us_states AS states
       ON ST_Contains(states.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    LEFT JOIN closest_ecoregion ON TRUE  -- Ensures closest ecoregion is always considered
 
-    WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    WHERE ST_Contains(counties.geometry, ST_SetSRID(ST_GeomFromText($1), 4269));
   `);
 }; // routeInfo
 
