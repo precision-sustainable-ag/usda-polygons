@@ -35,6 +35,7 @@ app.all('/lru', polygons.routeLRU);
 app.all('/mlra', polygons.routeMLRA);
 app.all('/state', polygons.routeState);
 app.all('/watershed', polygons.routeWatershed);
+app.all('/validmlra', polygons.routeValidMLRA);
 
 // start the server
 app.listen(80, () => {

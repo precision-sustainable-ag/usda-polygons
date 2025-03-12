@@ -248,6 +248,21 @@ const routeInfo = (req, res) => {
   `);
 }; // routeInfo
 
+const routeValidMLRA = async (req, res) => {
+  try {
+    const results = await pool.query('SELECT DISTINCT mlrarsym FROM mlra ORDER BY 1;');
+
+    if (results.rows.length) {
+      res.send(results.rows.map((row) => row.mlrarsym));
+    } else {
+      res.send({});
+    }
+  } catch (err) {
+    res.status(500).send({ error: 'Database error', details: err.message });
+    console.error(err);
+  }
+}; // routeValidMLRA
+
 module.exports = {
   routeInfo,
   routeCounty,
@@ -256,5 +271,6 @@ module.exports = {
   routeLRU,
   routeMLRA,
   routeState,
+  routeValidMLRA,
   routeWatershed,
 };
