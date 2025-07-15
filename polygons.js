@@ -1,4 +1,3 @@
-// test build
 const { pool } = require('./pools');
 
 const query = async (req, res, query) => {
