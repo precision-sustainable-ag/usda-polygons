@@ -84,18 +84,35 @@ const routeLRU = (req, res) => {
   `);
 }; // routeLRU
 
-const routeMLRA = (req, res) => {
-  query(req, res, `
-    SELECT
-      mlrarsym,
-      mlra_name,
-      lrrsym,
-      lrrname,
-      Box2D(geometry) as bbox
-      POLYGON
-    FROM polygons.mlra
-    WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
-  `);
+const routeMLRA = async (req, res) => {
+  if (req.query.mlra) {
+    const results = await pool.query(`
+      SELECT
+        mlrarsym,
+        mlra_name,
+        lrrsym,
+        lrrname,
+        Box2D(geometry) as bbox,
+        ST_X(ST_PointOnSurface(geometry)) AS lon,
+        ST_Y(ST_PointOnSurface(geometry)) AS lat
+      FROM polygons.mlra
+      WHERE mlrarsym=$1
+    `, [req.query.mlra]);
+    
+    res.json(results.rows[0]);
+  } else {
+    query(req, res, `
+      SELECT
+        mlrarsym,
+        mlra_name,
+        lrrsym,
+        lrrname,
+        Box2D(geometry) as bbox
+        POLYGON
+      FROM polygons.mlra
+      WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
+    `);
+  }
 }; // routeMLRA
 
 const routeState = (req, res) => {
