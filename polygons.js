@@ -89,13 +89,13 @@ const routeMLRA = async (req, res) => {
     const results = await pool.query(`
       SELECT
         mlrarsym,
-        mlra_name,
+        name AS mlra_name,
         lrrsym,
         lrrname,
-        Box2D(geometry) as bbox,
+        Box2D(geometry) AS bbox,
         ST_X(ST_PointOnSurface(geometry)) AS lon,
         ST_Y(ST_PointOnSurface(geometry)) AS lat
-      FROM polygons.mlra
+      FROM polygons.mlra2022
       WHERE mlrarsym=$1
     `, [req.query.mlra]);
     
@@ -104,12 +104,12 @@ const routeMLRA = async (req, res) => {
     query(req, res, `
       SELECT
         mlrarsym,
-        mlra_name,
+        name AS mlra_name,
         lrrsym,
         lrrname,
         Box2D(geometry) as bbox
         POLYGON
-      FROM polygons.mlra
+      FROM polygons.mlra2022
       WHERE ST_Contains(geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     `);
   }
@@ -210,7 +210,7 @@ const routeInfo = (req, res) => {
       Box2D(counties.geometry) as county_bbox,
 
       mlra.mlrarsym,
-      mlra.mlra_name,
+      mlra.name AS mlra_name,
       mlra.lrrsym,
       mlra.lrrname,
       Box2D(mlra.geometry) as mlra_bbox,
@@ -247,7 +247,7 @@ const routeInfo = (req, res) => {
       Box2D(states.geometry) as state_bbox
 
     FROM polygons.counties AS counties
-    LEFT JOIN polygons.mlra AS mlra
+    LEFT JOIN polygons.mlra2022 AS mlra
       ON ST_Contains(mlra.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
     LEFT JOIN polygons.hardiness_zones AS hardiness_zones
       ON ST_Contains(hardiness_zones.geometry, ST_SetSRID(ST_GeomFromText($1), 4269))
@@ -267,7 +267,7 @@ const routeInfo = (req, res) => {
 
 const routeValidMLRA = async (req, res) => {
   try {
-    const results = await pool.query('SELECT DISTINCT mlrarsym FROM mlra ORDER BY 1;');
+    const results = await pool.query('SELECT DISTINCT mlrarsym FROM mlra2022 ORDER BY 1;');
 
     if (results.rows.length) {
       res.send(results.rows.map((row) => row.mlrarsym));
