@@ -58,9 +58,14 @@ const routeStates = async (req, res) => {
   const { rows } = await pool.query(`
     SELECT
       state, state_code, statefp as fips,
+      capital,
+      lat AS capital_lat,
+      lon AS capital_lon,
       Box2D(geometry) as bbox,
       ST_AsText(ST_Centroid(geometry)) AS centroid
     FROM polygons.us_states
+    LEFT JOIN polygons.capitals
+    USING(state_code)
     ORDER BY state
   `);
 
