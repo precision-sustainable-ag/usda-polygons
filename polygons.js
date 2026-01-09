@@ -42,6 +42,17 @@ const routeCounty = (req, res) => {
   `);
 }; // routeCounty
 
+const routeCounties = async (req, res) => {
+  const { state } = req.query;
+  const { rows } = await pool.query(`
+    SELECT county FROM polygons.counties
+    WHERE state_code=$1
+    ORDER BY county
+  `, [state]);
+
+  res.json(rows.map((row) => row.county));
+}; // routeCounties
+
 const routeEcoregion = (req, res) => {
   query(req, res, `
     SELECT 
@@ -283,6 +294,7 @@ const routeValidMLRA = async (req, res) => {
 module.exports = {
   routeInfo,
   routeCounty,
+  routeCounties,
   routeEcoregion,
   routeHardiness,
   routeLRU,
