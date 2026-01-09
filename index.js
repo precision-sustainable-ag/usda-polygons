@@ -43,6 +43,7 @@ app.all('/hardiness', polygons.routeHardiness);
 app.all('/lru', polygons.routeLRU);
 app.all('/mlra', polygons.routeMLRA);
 app.all('/state', polygons.routeState);
+app.all('/states', polygons.routeStates);
 app.all('/watershed', polygons.routeWatershed);
 app.all('/validmlra', polygons.routeValidMLRA);
 
