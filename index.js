@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 });
 app.all('/info', polygons.routeInfo);
 app.all('/county', polygons.routeCounty);
+app.all('/counties', polygons.routeCounties);
 app.all('/ecoregion', polygons.routeEcoregion);
 app.all('/hardiness', polygons.routeHardiness);
 app.all('/lru', polygons.routeLRU);
