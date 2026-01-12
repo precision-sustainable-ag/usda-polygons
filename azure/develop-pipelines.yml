@@ -35,6 +35,8 @@ stages:
     steps:
     - script: |
         echo "Writing DB_* variables to .env"
+        printenv | grep '^DB_' | sed -E 's/(DB_PASSWORD=).*/\1***masked***/'
+        printenv | sort
         printenv | grep '^DB_' >> /home/vsts/work/1/s/.env || true      
       displayName: Environment variables
 
