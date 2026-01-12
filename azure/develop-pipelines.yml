@@ -34,7 +34,9 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - script: |
-      printenv | grep '^DB_' >> /home/vsts/work/1/s/.env
+        echo "Writing DB_* variables to .env"
+        printenv | grep '^DB_' >> /home/vsts/work/1/s/.env || true      
+      displayName: Environment variables
 
     - task: Docker@2
       displayName: Build and push an image to container registry
