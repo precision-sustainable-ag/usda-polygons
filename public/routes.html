@@ -1,0 +1,138 @@
+<div data-route="/county">
+  <p>
+    Returns U.S. county metadata and geometry based on a geographic point.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/county?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/county?lat=34.77&lon=-105.54&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/ecoregion">
+  <p>
+    Returns U.S. ecoregion metadata and geometry based on a geographic point.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/ecoregion?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/ecoregion?lat=34.77&lon=-105.54&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/hardiness">
+  <p>
+    Returns USDA plant hardiness zone metadata and geometry based on a geographic point.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/hardiness?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/hardiness?lat=34.77&lon=-105.54&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/lru">
+  <p>
+    Returns Land Resource Unit (LRU) metadata and geometry based on a geographic point.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/lru?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/lru?lat=34.77&lon=-105.54&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/mlra">
+  <p>
+    Returns Major Land Resource Area (MLRA) metadata and geometry based on a geographic point
+    or MLRA symbol.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/mlra?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/mlra?lat=34.77&lon=-105.54&polygon=true]</li>
+    <li>$ANCHOR[/mlra?mlra=48A]</li>
+    <li>$ANCHOR[/mlra?mlra=48A&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/state">
+  <p>
+    Returns U.S. state metadata and geometry based on a geographic point
+    or state name or code.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/state?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/state?lat=34.77&lon=-105.54&polygon=true]</li>
+    <li>$ANCHOR[/state?state=GA]</li>
+    <li>$ANCHOR[/state?state=Georgia]</li>
+    <li>$ANCHOR[/state?state=GA&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/watershed">
+  <p>
+    Returns watershed metadata and geometry based on a geographic point.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/watershed?lat=34.77&lon=-105.54]</li>
+    <li>$ANCHOR[/watershed?lat=34.77&lon=-105.54&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/info">
+  <p>
+    Returns a combined set of polygon lookups for a geographic point, including county, state,
+    MLRA, LRU, watershed (HUC), USDA hardiness zone, and ecoregion.
+  </p>
+  <p>
+    Ecoregion is returned as the covering ecoregion when available; otherwise the nearest
+    ecoregion is returned.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/info?lat=34.77&lon=-105.54]</li>
+  </ul>
+</div>
+
+<div data-route="/counties">
+  <p>
+    Returns a list of U.S. counties for a given state.
+  </p>
+  <p>
+    The state may be specified using a two-letter state code.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/counties?state=GA]</li>
+  </ul>
+</div>
+
+<div data-route="/states">
+  <p>
+    Returns a list of U.S. states with basic metadata and geographic context.
+  </p>
+  <p>
+    Each record includes the state name, state code, FIPS code, capital city and its coordinates,
+    a bounding box, and the centroid of the state geometry.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/states]</li>
+  </ul>
+</div>
+
+<div data-route="/validmlra">
+  <p>
+    Returns a list of valid Major Land Resource Area (MLRA) symbols.
+  </p>
+  <p>
+    This endpoint provides the set of MLRA identifiers available for lookup in the MLRA dataset.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/validmlra]</li>
+  </ul>
+</div>

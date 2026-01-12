@@ -39,6 +39,14 @@ stages:
         echo DATABASE="$(DATABASE)" >> /home/vsts/work/1/s/.env
         echo USER="$(USER)" >> /home/vsts/work/1/s/.env
         echo PASSWORD="$(PASSWORD)" >> /home/vsts/work/1/s/.env
+
+        echo DB_HOST="$(DB_HOST)" >> /home/vsts/work/1/s/.env
+        echo DB_DATABASE="$(DB_DATABASE)" >> /home/vsts/work/1/s/.env
+        echo DB_PORT="$(DB_PORT)" >> /home/vsts/work/1/s/.env
+        echo DB_USERNAME="$(DB_USERNAME)" >> /home/vsts/work/1/s/.env
+        echo DB_PASSWORD="$(DB_PASSWORD)" >> /home/vsts/work/1/s/.env
+        echo DB_SSL="$(DB_SSL)" >> /home/vsts/work/1/s/.env
+
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
