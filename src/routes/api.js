@@ -209,12 +209,31 @@ export default async function apiRoutes(app) {
         huc4name,
         huc2,
         huc2name,
-        Box2D(geometry) as bbox,
+        Box2D(geometry) AS bbox,
         ${polygonSql}
       FROM polygons.watersheds
       ${whereSQL}
     `,
     defaultParms,
+    { ...defaultOptions },
+  );
+
+  await simpleRoute('/csb',
+    'Geographic Lookup Endpoints',
+    'Crop Sequence Boundaries (CSB)',
+    `
+      SELECT
+        land_cover,
+        csbacres AS acres,
+        Box2D(shape) AS bbox,
+        ST_AsText(shape) AS polygon
+      FROM csb.national1724 n
+      LEFT JOIN csb.cdl_code_lookup c
+      ON cdl2024 = code
+      WHERE ST_Covers(shape, ST_SetSRID(ST_MakePoint($2, $1), 4326))
+      LIMIT 1
+    `,
+    { lat, lon },
     { ...defaultOptions },
   );
 
@@ -227,7 +246,7 @@ export default async function apiRoutes(app) {
         SELECT 
           ecoregion_code,
           ecoregion,
-          Box2D(geometry) as ecoregion_bbox
+          Box2D(geometry) AS ecoregion_bbox
         FROM polygons.ecoregions
         ORDER BY ST_Distance(geometry, ST_SetSRID(ST_Point($2, $1), 4269))
         LIMIT 1

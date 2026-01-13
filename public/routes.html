@@ -35,6 +35,9 @@
   <p>
     Returns Land Resource Unit (LRU) metadata and geometry based on a geographic point.
   </p>
+  <p>
+    Note that LRUs are available for New Mexico only.
+  </p>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/lru?lat=34.77&lon=-105.54]</li>
@@ -134,5 +137,18 @@
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/validmlra]</li>
+  </ul>
+</div>
+
+<div data-route="/csb">
+  <p>
+    Returns USDA Crop Sequence Boundaries (CSB) metadata for the land cover history at a geographic point.
+  </p>
+  <p>
+    Note that CSB coverage is limited to areas classified as cropland in at least one year; locations outside mapped cropland will return no result.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/csb?lat=35.5&lon=-90.93]</li>
   </ul>
 </div>

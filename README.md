@@ -2,29 +2,11 @@
 
 **Date Created**: 09/23/2024
 
-**Date Last Modified**: 09/26/2024
+**Date Last Modified**: 01/12/2026
 
 ___
 
-Examples:
-
-- https://polygons.vegspec.org/county?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/ecoregion?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/hardiness?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/lru?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/mlra?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/state?state=maryland&polygon=true
-- https://polygons.vegspec.org/state?state=MD&polygon=true
-- https://polygons.vegspec.org/state?lat=38.75&lon=-76.85&polygon=true
-- https://polygons.vegspec.org/watershed?lat=34.77&lon=-105.54&polygon=true
-- https://polygons.vegspec.org/info?lat=34.77&lon=-105.54
-
-To exclude boundaries, remove `polygon=true`.
-
-The **info** route contains data from all the routes *except* polygons, so use the other routes primarily when boundaries are needed.
-
-Note that LRUs are available for New Mexico only.
-
+Examples can be found at https://polygons.vegspec.org
 ___
 
 ## Data Sources
