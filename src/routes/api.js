@@ -4,7 +4,7 @@ import { makeSimpleRoute } from 'simple-route';
 export default async function apiRoutes(app) {
   const simpleRoute = makeSimpleRoute(app, pool, { public: true });
 
-  const lat = { type: 'number', required: true, examples: [34.77],  description: 'Latitude' };
+  const lat = { type: 'number', required: true, examples: [35.77],  description: 'Latitude' };
   const lon = { type: 'number', required: true, examples: [-105.54], description: 'Longitude' };
   const polygon = { type: 'boolean', examples: [true], description: 'Include polygon WKT in response' };
   const state = { required: true, examples: ['NC'], description: 'Two-letter state code' };
