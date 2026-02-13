@@ -1,12 +1,15 @@
-import { pool } from 'simple-route';
-import { makeSimpleRoute } from 'simple-route';
+import { makeSimpleRoute, pool } from 'simple-route';
 
 export default async function apiRoutes(app) {
   const simpleRoute = makeSimpleRoute(app, pool, { public: true });
 
-  const lat = { type: 'number', required: true, examples: [35.77],  description: 'Latitude' };
+  const lat = { type: 'number', required: true, examples: [35.77], description: 'Latitude' };
   const lon = { type: 'number', required: true, examples: [-105.54], description: 'Longitude' };
-  const polygon = { type: 'boolean', examples: [true], description: 'Include polygon WKT in response' };
+  const polygon = {
+    type: 'boolean',
+    examples: [true],
+    description: 'Include polygon WKT in response',
+  };
   const state = { required: true, examples: ['NC'], description: 'Two-letter state code' };
   const mlra = { type: 'string', description: 'MLRA symbol (mlrarsym), e.g. "148A"' };
 
@@ -25,7 +28,8 @@ export default async function apiRoutes(app) {
   const whereSQL = 'WHERE ST_Covers(geometry, ST_SetSRID(ST_Point($2, $1), 4269))';
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/county',
+  await simpleRoute(
+    '/county',
     'Geographic Lookup Endpoints',
     'County',
     `
@@ -44,7 +48,8 @@ export default async function apiRoutes(app) {
     { ...defaultOptions },
   );
 
-  await simpleRoute('/ecoregion',
+  await simpleRoute(
+    '/ecoregion',
     'Geographic Lookup Endpoints',
     'Ecoregion',
     `
@@ -62,7 +67,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/hardiness',
+  await simpleRoute(
+    '/hardiness',
     'Geographic Lookup Endpoints',
     'USDA Hardiness Zone',
     `
@@ -82,7 +88,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/lru',
+  await simpleRoute(
+    '/lru',
     'Geographic Lookup Endpoints',
     'Land Resource Unit (LRU)',
     `
@@ -137,10 +144,10 @@ export default async function apiRoutes(app) {
       mlra,
       lat: { type: 'number' },
       lon: { type: 'number' },
-      polygon
+      polygon,
     },
     { ...defaultOptions },
-  );  
+  );
 
   // -----------------------------------------------------------------------------------------------------------------------
   await simpleRoute(
@@ -188,11 +195,12 @@ export default async function apiRoutes(app) {
         )
       LIMIT 1
     `,
-    { state: { }, lat: { type: 'number' }, lon: { type: 'number' }, polygon },
+    { state: {}, lat: { type: 'number' }, lon: { type: 'number' }, polygon },
     { ...defaultOptions },
   );
-  
-  await simpleRoute('/watershed',
+
+  await simpleRoute(
+    '/watershed',
     'Geographic Lookup Endpoints',
     'Watershed (HUC)',
     `
@@ -218,7 +226,8 @@ export default async function apiRoutes(app) {
     { ...defaultOptions },
   );
 
-  await simpleRoute('/csb',
+  await simpleRoute(
+    '/csb',
     'Geographic Lookup Endpoints',
     'Crop Sequence Boundaries (CSB)',
     `
@@ -238,7 +247,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/info',
+  await simpleRoute(
+    '/info',
     'Reference Endpoints',
     'Combined location summary',
     `
@@ -319,7 +329,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/counties',
+  await simpleRoute(
+    '/counties',
     'Reference Endpoints',
     'Counties by state',
     `
@@ -332,7 +343,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/states',
+  await simpleRoute(
+    '/states',
     'Reference Endpoints',
     'List of U.S. States',
     `
@@ -351,7 +363,8 @@ export default async function apiRoutes(app) {
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
-  await simpleRoute('/validmlra',
+  await simpleRoute(
+    '/validmlra',
     'Reference Endpoints',
     'Valid MLRA symbols',
     'SELECT DISTINCT mlrarsym FROM mlra2022 ORDER BY 1',
