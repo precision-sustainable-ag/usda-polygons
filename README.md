@@ -16,6 +16,7 @@ ___
 - New Mexico LRU: [Dataset](https://aesl.ces.uga.edu/psa/nmlru.zip) - [Documentation](https://docs.google.com/spreadsheets/d/1ydtsy_zM2hTIU1u-dMvi4GNIOt6cHrZt/edit?gid=1559806972#gid=1559806972)
 - Hardiness Zones: [Dataset and Download](https://prism.oregonstate.edu/projects/plant_hardiness_zones.php)
 - States: [Dataset](https://www2.census.gov/geo/tiger/TIGER2024/STATE/)
+- Crop Sequence Boundaries (CSB): [Dataset](https://www.nass.usda.gov/Research_and_Science/Crop-Sequence-Boundaries/)
 ___
 
 ## Importing Steps
