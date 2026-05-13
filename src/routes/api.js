@@ -162,6 +162,9 @@ export default async function apiRoutes(app) {
         lrrname,
         Box2D(geometry) as bbox
       FROM polygons.mlra2022
+      ORDER BY 
+        CAST(substring(mlrarsym FROM '^[0-9]+') AS INTEGER), 
+        mlrarsym
     `,
   );
 
