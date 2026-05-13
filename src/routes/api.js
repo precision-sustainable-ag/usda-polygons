@@ -151,6 +151,22 @@ export default async function apiRoutes(app) {
 
   // -----------------------------------------------------------------------------------------------------------------------
   await simpleRoute(
+    '/mlras',
+    'Geographic Lookup Endpoints',
+    'All Major Land Resource Areas (MLRA)',
+    `
+      SELECT
+        mlrarsym,
+        name AS mlra_name,
+        lrrsym,
+        lrrname,
+        Box2D(geometry) as bbox
+      FROM polygons.mlra2022
+    `,
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
     '/state',
     'Geographic Lookup Endpoints',
     'State',
