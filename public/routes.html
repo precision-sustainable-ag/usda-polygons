@@ -45,6 +45,14 @@
   </ul>
 </div>
 
+<div data-route="/mlras">
+  <p>Returns all Major Land Resource Areas (MLRA) and their bounding boxes.</p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/mlras]</li>
+  </ul>
+</div>
+
 <div data-route="/mlra">
   <p>
     Returns Major Land Resource Area (MLRA) metadata and geometry based on a geographic point
@@ -56,6 +64,32 @@
     <li>$ANCHOR[/mlra?lat=35.77&lon=-105.54&polygon=true]</li>
     <li>$ANCHOR[/mlra?mlra=48A]</li>
     <li>$ANCHOR[/mlra?mlra=48A&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/mlrasbystate">
+  <p>
+    Returns a list of Major Land Resource Areas (MLRAs) for a given state name or code.
+  </p>
+  <p>
+    The state may be specified using a two-letter state code.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/mlrasbystate?state=FL]</li>
+    <li>$ANCHOR[/mlrasbystate?state=Florida]</li>
+    <li>$ANCHOR[/mlrasbystate?state=FL&polygon=true]</li>
+  </ul>
+</div>
+
+<div data-route="/statesbymlra">
+  <p>
+    Returns a list of states for a given Major Land Resource Area (MLRA) symbol.
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/statesbymlra?mlra=133A]</li>
+    <li>$ANCHOR[/statesbymlra?mlra=133A&polygon=true]</li>
   </ul>
 </div>
 
