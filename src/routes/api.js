@@ -170,6 +170,64 @@ export default async function apiRoutes(app) {
 
   // -----------------------------------------------------------------------------------------------------------------------
   await simpleRoute(
+    '/mlrasbystate',
+    'Geographic Lookup Endpoints',
+    'All Major Land Resource Areas (MLRA) by State',
+    `
+      SELECT DISTINCT
+        m.mlrarsym, m.name,
+        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(m.geometry) ELSE NULL END AS polygon
+      FROM us_states s
+      JOIN mlra2022 m
+        ON ST_Intersects(
+          ST_MakeValid(s.geometry),
+          ST_MakeValid(m.geometry)
+        )
+      WHERE
+        s.state_code = $1 OR s.state = $1
+      ORDER BY m.mlrarsym
+    `,
+    {
+      state: {
+        required: true,
+        examples: ['GA'],
+        description: 'Two-letter state code or full state name',
+      },
+      polygon,
+    },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
+    '/statesbymlra',
+    'Geographic Lookup Endpoints',
+    'All States for a given Major Land Resource Areas (MLRA)',
+    `
+      SELECT DISTINCT
+        s.state_code, s.state,
+        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(s.geometry) ELSE NULL END AS polygon
+      FROM us_states s
+      JOIN mlra2022 m
+        ON ST_Intersects(
+          ST_MakeValid(s.geometry),
+          ST_MakeValid(m.geometry)
+        )
+      WHERE
+        m.mlrarsym = $1
+      ORDER BY s.state_code
+    `,
+    {
+      mlra: {
+        required: true,
+        examples: ['133A'],
+        description: 'MLRA symbol',
+      },
+      polygon,
+    },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
     '/state',
     'Geographic Lookup Endpoints',
     'State',
