@@ -89,6 +89,38 @@ export default async function apiRoutes(app) {
 
   // -----------------------------------------------------------------------------------------------------------------------
   await simpleRoute(
+    '/hardinessbystate',
+    'Geographic Lookup Endpoints',
+    'USDA Hardiness Zones by State',
+    `
+      SELECT DISTINCT ON (hz.ogc_fid)
+        hz.ogc_fid,
+        hz.id,
+        hz.gridcode,
+        hz.zone,
+        hz.trange,
+        Box2D(hz.geometry) as bbox,
+        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(hz.geometry) ELSE NULL END AS polygon
+      FROM polygons.us_states s
+      JOIN polygons.hardiness_zones hz
+        ON ST_Intersects(s.geometry, hz.geometry)
+      WHERE
+        s.state_code ILIKE $1 OR s.state ILIKE $1
+      ORDER BY hz.ogc_fid
+    `,
+    {
+      state: {
+        required: true,
+        examples: ['NC'],
+        description: 'Two-letter state code or full state name',
+      },
+      polygon,
+    },
+    // { ...defaultOptions },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
     '/lru',
     'Geographic Lookup Endpoints',
     'Land Resource Unit (LRU)',
