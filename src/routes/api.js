@@ -104,6 +104,9 @@ export default async function apiRoutes(app) {
       FROM polygons.us_states s
       JOIN polygons.hardiness_zones hz
         ON ST_Intersects(s.geometry, hz.geometry)
+        AND ST_Area(
+          ST_Intersection(s.geometry, hz.geometry)::geography
+        ) >= 1000000
       WHERE
         s.state_code ILIKE $1 OR s.state ILIKE $1
       ORDER BY hz.ogc_fid
