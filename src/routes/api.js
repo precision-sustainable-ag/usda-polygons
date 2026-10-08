@@ -100,10 +100,21 @@ export default async function apiRoutes(app) {
         hz.zone,
         hz.trange,
         Box2D(hz.geometry) as bbox,
-        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(hz.geometry) ELSE NULL END AS polygon
+        CASE WHEN COALESCE($2::boolean, false)
+          THEN ST_AsText(
+            ST_CollectionExtract(
+              ST_Intersection(s.geometry, hz.geometry),
+              3
+            )
+          )
+          ELSE NULL
+        END AS polygon
       FROM polygons.us_states s
       JOIN polygons.hardiness_zones hz
         ON ST_Intersects(s.geometry, hz.geometry)
+        AND ST_Area(
+          ST_Intersection(s.geometry, hz.geometry)::geography
+        ) >= 1000000
       WHERE
         s.state_code ILIKE $1 OR s.state ILIKE $1
       ORDER BY hz.ogc_fid
