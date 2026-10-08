@@ -100,7 +100,15 @@ export default async function apiRoutes(app) {
         hz.zone,
         hz.trange,
         Box2D(hz.geometry) as bbox,
-        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(hz.geometry) ELSE NULL END AS polygon
+        CASE WHEN COALESCE($2::boolean, false)
+          THEN ST_AsText(
+            ST_CollectionExtract(
+              ST_Intersection(s.geometry, hz.geometry),
+              3
+            )
+          )
+          ELSE NULL
+        END AS polygon
       FROM polygons.us_states s
       JOIN polygons.hardiness_zones hz
         ON ST_Intersects(s.geometry, hz.geometry)
