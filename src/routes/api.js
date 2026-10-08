@@ -368,6 +368,23 @@ export default async function apiRoutes(app) {
 
   // -----------------------------------------------------------------------------------------------------------------------
   await simpleRoute(
+    '/countiesbystate',
+    'Geographic Lookup Endpoints',
+    'County labels by state',
+    `
+      SELECT
+        county,
+        ST_X(ST_PointOnSurface(geometry)) AS lon,
+        ST_Y(ST_PointOnSurface(geometry)) AS lat
+      FROM polygons.counties
+      WHERE state_code = $1
+      ORDER BY county
+    `,
+    { state },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
     '/info',
     'Reference Endpoints',
     'Combined location summary',
