@@ -82,6 +82,27 @@
   </ul>
 </div>
 
+<div data-route="/ecoregionsbystate">
+  <p>
+    Returns a list of Ecoregions for a given state name or code.
+  </p>
+  <p>
+    Only Ecoregions overlapping the state by at least 1 km² are included.
+    Polygons are clipped to the state's boundaries.
+  </p>
+  <p>
+    The optional <code>simplify</code> parameter reduces polygon detail
+    using a tolerance specified in meters. The default is 0 (no simplification).
+  </p>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=Florida]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true&simplify=100]</li>
+  </ul>
+</div>
+
 <div data-route="/statesbymlra">
   <p>
     Returns a list of states for a given Major Land Resource Area (MLRA) symbol.

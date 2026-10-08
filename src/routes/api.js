@@ -16,7 +16,11 @@ export default async function apiRoutes(app) {
   const defaultParms = { lat, lon, polygon };
   const defaultOptions = { object: true, excludeNulls: true };
 
-  console.log({ defaultOptions });
+  const simplify = {
+    type: 'number',
+    examples: [100],
+    description: 'Geometry simplification tolerance in meters (0 = no simplification)',
+  };
 
   const polygonSql = `
     CASE
@@ -477,6 +481,64 @@ export default async function apiRoutes(app) {
       ORDER BY county
     `,
     { state },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
+    '/ecoregionsbystate',
+    'Geographic Lookup Endpoints',
+    'Ecoregions by State',
+    `
+      WITH clipped AS (
+        SELECT
+          e.ecoregion_code,
+          e.ecoregion,
+          ST_Intersection(s.geometry, e.geometry) AS geom
+        FROM polygons.us_states s
+        JOIN polygons.ecoregions e
+          ON ST_Intersects(s.geometry, e.geometry)
+          AND ST_Area(
+            ST_Intersection(s.geometry, e.geometry)::geography
+          ) >= 1000000
+        WHERE s.state_code ILIKE $1 OR s.state ILIKE $1
+      ),
+      simplified AS (
+        SELECT
+          ecoregion_code,
+          ecoregion,
+          CASE
+            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0 THEN
+              ST_Transform(
+                ST_SimplifyPreserveTopology(
+                  ST_Transform(geom, 5070),
+                  NULLIF($3::text, '')::float8
+                ),
+                4269
+              )
+            ELSE geom
+          END AS geom
+        FROM clipped
+      )
+      SELECT
+        ecoregion_code,
+        ecoregion,
+        Box2D(geom) AS bbox,
+        CASE WHEN COALESCE($2::boolean, false)
+          THEN ST_AsText(ST_CollectionExtract(geom, 3))
+          ELSE NULL
+        END AS polygon
+      FROM simplified
+      ORDER BY ecoregion_code, ecoregion
+    `,
+    {
+      state: {
+        required: true,
+        examples: ['FL'],
+        description: 'Two-letter state code or full state name',
+      },
+      polygon,
+      simplify,
+    },
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
