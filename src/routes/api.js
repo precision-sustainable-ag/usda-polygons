@@ -97,31 +97,53 @@ export default async function apiRoutes(app) {
     'Geographic Lookup Endpoints',
     'USDA Hardiness Zones by State',
     `
-      SELECT DISTINCT ON (hz.ogc_fid)
-        hz.ogc_fid,
-        hz.id,
-        hz.gridcode,
-        hz.zone,
-        hz.trange,
-        Box2D(hz.geometry) as bbox,
-        CASE WHEN COALESCE($2::boolean, false)
-          THEN ST_AsText(
-            ST_CollectionExtract(
-              ST_Intersection(s.geometry, hz.geometry),
-              3
-            )
-          )
+      WITH clipped AS (
+        SELECT
+          h.zone,
+          h.gridcode,
+          ST_CollectionExtract(
+            ST_Intersection(s.geometry, h.geometry),
+            3
+          ) AS geom
+        FROM polygons.us_states s
+        JOIN polygons.hardiness_zones h
+          ON ST_Intersects(s.geometry, h.geometry)
+        WHERE lower(s.state_code) = lower($1) OR lower(s.state) = lower($1)
+      ),
+      eligible AS (
+        SELECT *
+        FROM clipped
+        WHERE NOT ST_IsEmpty(geom)
+          AND ST_Area(geom::geography) >= 1000000
+      ),
+      simplified AS (
+        SELECT
+          zone,
+          gridcode,
+          CASE
+            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0 THEN
+              ST_Transform(
+                ST_SimplifyPreserveTopology(
+                  ST_Transform(geom, 5070),
+                  NULLIF($3::text, '')::float8
+                ),
+                ST_SRID(geom)
+              )
+            ELSE geom
+          END AS geom
+        FROM eligible
+      )
+      SELECT
+        zone,
+        gridcode,
+        Box2D(geom) AS bbox,
+        CASE
+          WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
+          THEN ST_AsText(geom)
           ELSE NULL
         END AS polygon
-      FROM polygons.us_states s
-      JOIN polygons.hardiness_zones hz
-        ON ST_Intersects(s.geometry, hz.geometry)
-        AND ST_Area(
-          ST_Intersection(s.geometry, hz.geometry)::geography
-        ) >= 1000000
-      WHERE
-        s.state_code ILIKE $1 OR s.state ILIKE $1
-      ORDER BY hz.ogc_fid
+      FROM simplified
+      ORDER BY zone, gridcode
     `,
     {
       state: {
@@ -130,6 +152,7 @@ export default async function apiRoutes(app) {
         description: 'Two-letter state code or full state name',
       },
       polygon,
+      simplify,
     },
     // { ...defaultOptions },
   );
@@ -497,10 +520,14 @@ export default async function apiRoutes(app) {
         FROM polygons.us_states s
         JOIN polygons.ecoregions e
           ON ST_Intersects(s.geometry, e.geometry)
-          AND ST_Area(
-            ST_Intersection(s.geometry, e.geometry)::geography
-          ) >= 1000000
-        WHERE s.state_code ILIKE $1 OR s.state ILIKE $1
+        WHERE lower(s.state_code) = lower($1)
+          OR lower(s.state) = lower($1)
+      ),
+      eligible AS (
+        SELECT *
+        FROM clipped
+        WHERE NOT ST_IsEmpty(geom)
+          AND ST_Area(geom::geography) >= 1000000
       ),
       simplified AS (
         SELECT
@@ -513,17 +540,18 @@ export default async function apiRoutes(app) {
                   ST_Transform(geom, 5070),
                   NULLIF($3::text, '')::float8
                 ),
-                4269
+                ST_SRID(geom)
               )
             ELSE geom
           END AS geom
-        FROM clipped
+        FROM eligible
       )
       SELECT
         ecoregion_code,
         ecoregion,
         Box2D(geom) AS bbox,
-        CASE WHEN COALESCE($2::boolean, false)
+        CASE
+          WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
           THEN ST_AsText(ST_CollectionExtract(geom, 3))
           ELSE NULL
         END AS polygon
@@ -539,6 +567,29 @@ export default async function apiRoutes(app) {
       polygon,
       simplify,
     },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
+    '/countiesbystate',
+    'Geographic Lookup Endpoints',
+    'County polygons by State',
+    `
+      SELECT
+        county,
+        countyfips,
+        ST_X(ST_PointOnSurface(geometry)) AS lon,
+        ST_Y(ST_PointOnSurface(geometry)) AS lat,
+        CASE
+          WHEN COALESCE($2::boolean, false)
+          THEN ST_AsText(geometry)
+          ELSE NULL
+        END AS polygon
+      FROM polygons.counties
+      WHERE state_code = $1
+      ORDER BY county
+    `,
+    { state, polygon },
   );
 
   // -----------------------------------------------------------------------------------------------------------------------
