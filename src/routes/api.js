@@ -10,8 +10,16 @@ export default async function apiRoutes(app) {
     examples: [true],
     description: 'Include polygon WKT in response',
   };
+
   const state = { required: true, examples: ['NC'], description: 'Two-letter state code' };
+
   const mlra = { type: 'string', description: 'MLRA symbol (mlrarsym), e.g. "148A"' };
+
+  const ecoregion = {
+    type: 'string',
+    examples: ['NORTHWESTERN FORESTED MOUNTAINS'],
+    description: 'Optional ecoregion code used to clip the returned LRU geometries',
+  };
 
   const defaultParms = { lat, lon, polygon };
   const defaultOptions = { object: true, excludeNulls: true };
@@ -97,52 +105,79 @@ export default async function apiRoutes(app) {
     'Geographic Lookup Endpoints',
     'USDA Hardiness Zones by State',
     `
-      WITH clipped AS (
+      WITH selected_state AS MATERIALIZED (
+        SELECT geometry
+        FROM polygons.us_states
+        WHERE lower(state_code) = lower($1)
+          OR lower(state) = lower($1)
+      ),
+      selected_ecoregion AS MATERIALIZED (
+        SELECT
+          public.ST_UnaryUnion(
+            public.ST_Collect(e.geometry)
+          ) AS geometry
+        FROM polygons.ecoregions e
+        JOIN selected_state s
+          ON public.ST_Intersects(e.geometry, s.geometry)
+        WHERE e.ecoregion_code::text = NULLIF($4::text, '')
+      ),
+      region AS MATERIALIZED (
+        SELECT
+          CASE
+            WHEN NULLIF($4::text, '') IS NULL THEN s.geometry
+            ELSE public.ST_Intersection(s.geometry, e.geometry)
+          END AS geometry
+        FROM selected_state s
+        CROSS JOIN selected_ecoregion e
+      ),
+      candidates AS MATERIALIZED (
         SELECT
           h.zone,
           h.gridcode,
-          ST_CollectionExtract(
-            ST_Intersection(s.geometry, h.geometry),
+          h.geometry
+        FROM polygons.hardiness_zones h
+        JOIN region r
+          ON h.geometry && r.geometry
+        AND public.ST_Intersects(h.geometry, r.geometry)
+      ),
+      clipped AS (
+        SELECT
+          c.zone,
+          c.gridcode,
+          public.ST_CollectionExtract(
+            public.ST_Intersection(c.geometry, r.geometry),
             3
           ) AS geom
-        FROM polygons.us_states s
-        JOIN polygons.hardiness_zones h
-          ON ST_Intersects(s.geometry, h.geometry)
-        WHERE lower(s.state_code) = lower($1) OR lower(s.state) = lower($1)
+        FROM candidates c
+        CROSS JOIN region r
       ),
       eligible AS (
         SELECT *
         FROM clipped
-        WHERE NOT ST_IsEmpty(geom)
-          AND ST_Area(geom::geography) >= 1000000
-      ),
-      simplified AS (
-        SELECT
-          zone,
-          gridcode,
-          CASE
-            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0 THEN
-              ST_Transform(
-                ST_SimplifyPreserveTopology(
-                  ST_Transform(geom, 5070),
-                  NULLIF($3::text, '')::float8
-                ),
-                ST_SRID(geom)
-              )
-            ELSE geom
-          END AS geom
-        FROM eligible
+        WHERE NOT public.ST_IsEmpty(geom) AND public.ST_Area(geom::geography) >= 1000000
       )
       SELECT
         zone,
         gridcode,
-        Box2D(geom) AS bbox,
+        public.Box2D(geom) AS bbox,
         CASE
           WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
-          THEN ST_AsText(geom)
+          THEN public.ST_AsText(
+            CASE
+              WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0
+              THEN public.ST_Transform(
+                public.ST_SimplifyPreserveTopology(
+                  public.ST_Transform(geom, 5070),
+                  NULLIF($3::text, '')::float8
+                ),
+                public.ST_SRID(geom)
+              )
+              ELSE geom
+            END
+          )
           ELSE NULL
         END AS polygon
-      FROM simplified
+      FROM eligible
       ORDER BY zone, gridcode
     `,
     {
@@ -153,6 +188,7 @@ export default async function apiRoutes(app) {
       },
       polygon,
       simplify,
+      ecoregion,
     },
     // { ...defaultOptions },
   );
@@ -242,28 +278,87 @@ export default async function apiRoutes(app) {
   await simpleRoute(
     '/mlrasbystate',
     'Geographic Lookup Endpoints',
-    'All Major Land Resource Areas (MLRA) by State',
+    'Major Land Resource Areas (MLRA) by State and optional Ecoregion',
     `
-      SELECT DISTINCT
-        m.mlrarsym, m.name,
-        CASE WHEN COALESCE($2::boolean, false) THEN ST_AsText(m.geometry) ELSE NULL END AS polygon
-      FROM us_states s
-      JOIN mlra2022 m
-        ON ST_Intersects(
-          ST_MakeValid(s.geometry),
-          ST_MakeValid(m.geometry)
-        )
-      WHERE
-        s.state_code = $1 OR s.state = $1
-      ORDER BY m.mlrarsym
+      WITH selected_state AS MATERIALIZED (
+        SELECT ST_MakeValid(geometry) AS geometry
+        FROM us_states
+        WHERE lower(state_code) = lower($1)
+          OR lower(state) = lower($1)
+      ),
+      selected_ecoregion AS MATERIALIZED (
+        SELECT
+          ST_UnaryUnion(ST_Collect(e.geometry)) AS geometry
+        FROM ecoregions e
+        JOIN selected_state s
+          ON ST_Intersects(e.geometry, s.geometry)
+        WHERE e.ecoregion_code::text = NULLIF($4::text, '')
+      ),
+      region AS MATERIALIZED (
+        SELECT
+          CASE
+            WHEN NULLIF($4::text, '') IS NULL THEN s.geometry
+            ELSE ST_Intersection(s.geometry, e.geometry)
+          END AS geometry
+        FROM selected_state s
+        CROSS JOIN selected_ecoregion e
+      ),
+      clipped AS (
+        SELECT
+          m.mlrarsym,
+          m.name,
+          ST_CollectionExtract(
+            ST_Intersection(ST_MakeValid(m.geometry), r.geometry),
+            3 
+          ) AS geom
+        FROM region r
+        JOIN mlra2022 m
+          ON ST_Intersects(m.geometry, r.geometry)
+      ),
+      eligible AS (
+        SELECT *
+        FROM clipped
+        WHERE NOT ST_IsEmpty(geom)
+          AND ST_Area(geom::geography) >= 10000000
+      ),
+      simplified AS (
+        SELECT
+          mlrarsym,
+          name,
+          CASE
+            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0 THEN
+              ST_Transform(
+                ST_SimplifyPreserveTopology(
+                  ST_Transform(geom, 5070),
+                  NULLIF($3::text, '')::float8
+                ),
+                ST_SRID(geom)
+              )
+            ELSE geom
+          END AS geom
+        FROM eligible
+      )
+      SELECT
+        mlrarsym,
+        name,
+        Box2D(geom) AS bbox,
+        CASE
+          WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
+          THEN ST_AsText(geom)
+          ELSE NULL
+        END AS polygon
+      FROM simplified
+      ORDER BY mlrarsym
     `,
     {
       state: {
         required: true,
-        examples: ['GA'],
+        examples: ['MT', 'WY'],
         description: 'Two-letter state code or full state name',
       },
       polygon,
+      simplify,
+      ecoregion,
     },
   );
 
@@ -520,8 +615,7 @@ export default async function apiRoutes(app) {
         FROM polygons.us_states s
         JOIN polygons.ecoregions e
           ON ST_Intersects(s.geometry, e.geometry)
-        WHERE lower(s.state_code) = lower($1)
-          OR lower(s.state) = lower($1)
+        WHERE lower(s.state_code) = lower($1) OR lower(s.state) = lower($1)
       ),
       eligible AS (
         SELECT *
@@ -566,6 +660,87 @@ export default async function apiRoutes(app) {
       },
       polygon,
       simplify,
+    },
+  );
+
+  // -----------------------------------------------------------------------------------------------------------------------
+  await simpleRoute(
+    '/lrusbystate',
+    'Geographic Lookup Endpoints',
+    'LRUs by State',
+    `
+      WITH selected_state AS MATERIALIZED (
+        SELECT geometry
+        FROM polygons.us_states
+        WHERE lower(state_code) = lower($1) OR lower(state) = lower($1)
+      ),
+      selected_ecoregion AS MATERIALIZED (
+        SELECT
+          public.ST_UnaryUnion(public.ST_Collect(e.geometry)) AS geometry
+        FROM polygons.ecoregions e
+        JOIN selected_state s
+          ON public.ST_Intersects(e.geometry, s.geometry)
+        WHERE e.ecoregion_code::text = NULLIF($4::text, '')
+      ),
+      region AS MATERIALIZED (
+        SELECT
+          CASE
+            WHEN NULLIF($4::text, '') IS NULL THEN s.geometry
+            ELSE public.ST_Intersection(s.geometry, e.geometry)
+          END AS geometry
+        FROM selected_state s
+        CROSS JOIN selected_ecoregion e
+      ),
+      clipped AS (
+        SELECT
+          l.lru,
+          l.lru_description,
+          public.ST_CollectionExtract(
+            public.ST_Intersection(l.geometry, r.geometry),
+            3
+          ) AS geom
+        FROM region r
+        JOIN polygons.lru l
+          ON public.ST_Intersects(l.geometry, r.geometry)
+      ),
+      eligible AS (
+        SELECT *
+        FROM clipped
+        WHERE NOT public.ST_IsEmpty(geom) AND public.ST_Area(geom::geography) >= 1000000
+      )
+      SELECT
+        lru,
+        lru_description,
+        public.Box2D(geom) AS bbox,
+        CASE
+          WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
+          THEN public.ST_AsText(
+            CASE
+              WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0
+              THEN public.ST_Transform(
+                public.ST_SimplifyPreserveTopology(
+                  public.ST_Transform(geom, 5070),
+                  NULLIF($3::text, '')::float8
+                ),
+                4269
+              )
+              ELSE geom
+            END
+          )
+          ELSE NULL
+        END AS polygon
+      FROM eligible
+      ORDER BY lru    
+    `,
+    {
+      state: {
+        required: true,
+        examples: ['NM'],
+        description: 'Two-letter state code or full state name',
+      },
+      polygon,
+      simplify,
+      ecoregion,
     },
   );
 
