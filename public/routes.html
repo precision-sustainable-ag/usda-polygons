@@ -1,7 +1,11 @@
 <div data-route="/county">
-  <p>
-    Returns U.S. county metadata and geometry based on a geographic point.
-  </p>
+  <p>Returns U.S. county metadata and geometry based on a geographic point.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/county?lat=35.77&lon=-105.54]</li>
@@ -10,9 +14,13 @@
 </div>
 
 <div data-route="/ecoregion">
-  <p>
-    Returns U.S. ecoregion metadata and geometry based on a geographic point.
-  </p>
+  <p>Returns U.S. ecoregion metadata and geometry based on a geographic point.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/ecoregion?lat=35.77&lon=-105.54]</li>
@@ -21,9 +29,14 @@
 </div>
 
 <div data-route="/hardiness">
-  <p>
-    Returns USDA plant hardiness zone metadata and geometry based on a geographic point.
-  </p>
+  <p>Returns USDA plant hardiness zone metadata and geometry based on a geographic point.</p>
+  <p>The zone identifies a range of average annual extreme minimum temperatures.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/hardiness?lat=35.77&lon=-105.54]</li>
@@ -31,13 +44,34 @@
   </ul>
 </div>
 
+<div data-route="/hardinessbystate">
+  <p>Returns USDA plant hardiness zones for a state, optionally clipped to an ecoregion.</p>
+  <p>State-only data comes from precomputed state-zone geometry; state-plus-ecoregion data from precomputed state/ecoregion-zone geometry. The endpoint supports simplified WKT polygons.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>State postal abbreviation.</td></tr>
+    <tr><td><code>ecoregion</code></td><td>string</td><td>Optional</td><td>Restrict results to this ecoregion code within the requested state.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+    <tr><td><code>simplify</code></td><td>number</td><td>Optional; default 0</td><td>Simplification tolerance in meters; 0 returns unsimplified geometry.</td></tr>
+  </tbody></table>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/hardinessbystate?state=GA]</li>
+    <li>$ANCHOR[/hardinessbystate?state=GA&polygon=true]</li>
+    <li>$ANCHOR[/hardinessbystate?state=OR&ecoregion=7&polygon=true&simplify=100]</li>
+  </ul>
+  <p><strong>Performance:</strong> Spatial intersections are precomputed in derived tables; polygon simplification is performed when geometry is requested.</p>
+</div>
+
 <div data-route="/lru">
-  <p>
-    Returns Land Resource Unit (LRU) metadata and geometry based on a geographic point.
-  </p>
-  <p>
-    Note that LRUs are available for New Mexico only.
-  </p>
+  <p>Returns Land Resource Unit (LRU) metadata and geometry based on a geographic point.</p>
+  <p>Note that LRUs are available for New Mexico only.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/lru?lat=35.77&lon=-105.54]</li>
@@ -45,19 +79,33 @@
   </ul>
 </div>
 
-<div data-route="/mlras">
-  <p>Returns all Major Land Resource Areas (MLRA) and their bounding boxes.</p>
+<div data-route="/lrusbystate">
+  <p>Returns Land Resource Units within a state and, optionally, an ecoregion.</p>
+  <p>Used for New Mexico ecoregion → LRU selection; polygon geometry can be clipped to the selected region.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>State postal abbreviation or full state name.</td></tr>
+    <tr><td><code>ecoregion</code></td><td>string</td><td>Optional</td><td>Restrict results to this ecoregion code within the requested state.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+    <tr><td><code>simplify</code></td><td>number</td><td>Optional; default 0</td><td>Simplification tolerance in meters; 0 returns unsimplified geometry.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
-    <li>$ANCHOR[/mlras]</li>
+    <li>$ANCHOR[/lrusbystate?state=NM]</li>
+    <li>$ANCHOR[/lrusbystate?state=NM&polygon=true]</li>
+    <li>$ANCHOR[/lrusbystate?state=NM&ecoregion=10&polygon=true&simplify=100]</li>
   </ul>
 </div>
 
 <div data-route="/mlra">
-  <p>
-    Returns Major Land Resource Area (MLRA) metadata and geometry based on a geographic point
-    or MLRA symbol.
-  </p>
+  <p>Returns Major Land Resource Area (MLRA) metadata and geometry based on a geographic point or MLRA symbol.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Alternative lookup</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Alternative lookup</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>mlra</code></td><td>string</td><td>Alternative lookup</td><td>MLRA identifier, such as 48A.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/mlra?lat=35.77&lon=-105.54]</li>
@@ -67,46 +115,41 @@
   </ul>
 </div>
 
-<div data-route="/mlrasbystate">
-  <p>
-    Returns a list of Major Land Resource Areas (MLRAs) for a given state name or code.
-  </p>
-  <p>
-    The state may be specified using a two-letter state code.
-  </p>
+<div data-route="/mlras">
+  <p>Returns all Major Land Resource Areas (MLRA) and their bounding boxes.</p>
+  <h4>Parameters</h4>
+  <p>None.</p>
   <h4>Examples</h4>
   <ul>
-    <li>$ANCHOR[/mlrasbystate?state=FL]</li>
-    <li>$ANCHOR[/mlrasbystate?state=Florida]</li>
-    <li>$ANCHOR[/mlrasbystate?state=FL&polygon=true]</li>
+    <li>$ANCHOR[/mlras]</li>
   </ul>
 </div>
 
-<div data-route="/ecoregionsbystate">
-  <p>
-    Returns a list of Ecoregions for a given state name or code.
-  </p>
-  <p>
-    Only Ecoregions overlapping the state by at least 1 km² are included.
-    Polygons are clipped to the state's boundaries.
-  </p>
-  <p>
-    The optional <code>simplify</code> parameter reduces polygon detail
-    using a tolerance specified in meters. The default is 0 (no simplification).
-  </p>
+<div data-route="/mlrasbystate">
+  <p>Returns a list of Major Land Resource Areas (MLRAs) for a given state name or code, optionally restricted to a selected ecoregion.</p>
+  <p>When an ecoregion is provided, polygon output is clipped to the selected state and ecoregion.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>Two-letter state code or full state name.</td></tr>
+    <tr><td><code>ecoregion</code></td><td>string</td><td>Optional</td><td>Restrict results to this ecoregion code within the requested state.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+    <tr><td><code>simplify</code></td><td>number</td><td>Optional; default 0</td><td>Simplification tolerance in meters; 0 returns unsimplified geometry.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
-    <li>$ANCHOR[/ecoregionsbystate?state=FL]</li>
-    <li>$ANCHOR[/ecoregionsbystate?state=Florida]</li>
-    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true]</li>
-    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true&simplify=100]</li>
+    <li>$ANCHOR[/mlrasbystate?state=Montana]</li>
+    <li>$ANCHOR[/mlrasbystate?state=MT&polygon=true]</li>
+    <li>$ANCHOR[/mlrasbystate?state=WY&ecoregion=6&polygon=true&simplify=100]</li>
   </ul>
 </div>
 
 <div data-route="/statesbymlra">
-  <p>
-    Returns a list of states for a given Major Land Resource Area (MLRA) symbol.
-  </p>
+  <p>Returns a list of states for a given Major Land Resource Area (MLRA) symbol.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>mlra</code></td><td>string</td><td>Required for symbol lookup</td><td>MLRA identifier, such as 48A.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/statesbymlra?mlra=133A]</li>
@@ -114,11 +157,35 @@
   </ul>
 </div>
 
+<div data-route="/ecoregionsbystate">
+  <p>Returns a list of Ecoregions for a given state name or code.</p>
+  <p>Only Ecoregions overlapping the state by at least 1 km² are included. Polygons are clipped to the state's boundaries.</p>
+  <p>The optional <code>simplify</code> parameter reduces polygon detail using a tolerance specified in meters. The default is 0 (no simplification).  </p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>Two-letter state code or full state name.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+    <tr><td><code>simplify</code></td><td>number</td><td>Optional; default 0</td><td>Simplification tolerance in meters; 0 returns unsimplified geometry.</td></tr>
+  </tbody></table>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=Florida]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true]</li>
+    <li>$ANCHOR[/ecoregionsbystate?state=FL&polygon=true&simplify=100]</li>
+  </ul>
+  <p><strong>Performance:</strong> Spatial intersections are precomputed in derived tables; polygon simplification is performed when geometry is requested.</p>
+</div>
+
 <div data-route="/state">
-  <p>
-    Returns U.S. state metadata and geometry based on a geographic point
-    or state name or code.
-  </p>
+  <p>Returns U.S. state metadata and geometry based on a geographic point or state name or code.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Alternative lookup</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Alternative lookup</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>state</code></td><td>string</td><td>Alternative lookup</td><td>State postal abbreviation or full state name.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/state?lat=35.77&lon=-105.54]</li>
@@ -130,9 +197,14 @@
 </div>
 
 <div data-route="/watershed">
-  <p>
-    Returns watershed metadata and geometry based on a geographic point.
-  </p>
+  <p>Locate the watershed (HUC) associated with a point.</p>
+  <p>The precise returned HUC level and field names depend on the configured watershed dataset.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/watershed?lat=35.77&lon=-105.54]</li>
@@ -140,15 +212,28 @@
   </ul>
 </div>
 
+<div data-route="/csb">
+  <p>Returns USDA Crop Sequence Boundaries (CSB) metadata for the land cover history at a geographic point.</p>
+  <p>Note that CSB coverage is limited to areas classified as cropland in at least one year; locations outside mapped cropland will return no result.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+  </tbody></table>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/csb?lat=35.5&lon=-90.93]</li>
+  </ul>
+</div>
+
 <div data-route="/info">
-  <p>
-    Returns a combined set of polygon lookups for a geographic point, including county, state,
-    MLRA, LRU, watershed (HUC), USDA hardiness zone, and ecoregion.
-  </p>
-  <p>
-    Ecoregion is returned as the covering ecoregion when available; otherwise the nearest
-    ecoregion is returned.
-  </p>
+  <p>Returns a combined set of polygon lookups for a geographic point, including county, state, MLRA, LRU, watershed (HUC), USDA hardiness zone, and ecoregion.</p>
+  <p>Ecoregion is returned as the covering ecoregion when available; otherwise the nearest ecoregion is returned.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>lat</code></td><td>number</td><td>Required</td><td>Latitude in decimal degrees.</td></tr>
+    <tr><td><code>lon</code></td><td>number</td><td>Required</td><td>Longitude in decimal degrees.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/info?lat=35.77&lon=-105.54]</li>
@@ -156,26 +241,37 @@
 </div>
 
 <div data-route="/counties">
-  <p>
-    Returns a list of U.S. counties for a given state.
-  </p>
-  <p>
-    The state may be specified using a two-letter state code.
-  </p>
+  <p>Returns a list of U.S. counties for a given state.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>State postal abbreviation or full state name.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/counties?state=GA]</li>
   </ul>
 </div>
 
+<div data-route="/countiesbystate">
+  <p>Returns county metadata and boundaries for a state.</p>
+  <p>Used to populate MCCC county selections and Mapbox county layers; includes label coordinates in the Selector’s current response.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>State postal abbreviation or full state name.</td></tr>
+    <tr><td><code>polygon</code></td><td>boolean</td><td>Optional; default false</td><td>Include WKT polygon geometry when true.</td></tr>
+  </tbody></table>
+  <h4>Examples</h4>
+  <ul>
+    <li>$ANCHOR[/countiesbystate?state=MN]</li>
+    <li>$ANCHOR[/countiesbystate?state=MN&polygon=true]</li>
+  </ul>
+</div>
+
 <div data-route="/states">
-  <p>
-    Returns a list of U.S. states with basic metadata and geographic context.
-  </p>
-  <p>
-    Each record includes the state name, state code, FIPS code, capital city and its coordinates,
-    a bounding box, and the centroid of the state geometry.
-  </p>
+  <p>Returns a list of U.S. states with basic metadata and geographic context.</p>
+  <p>Each record includes the state name, state code, FIPS code, capital city and its coordinates, a bounding box, and the centroid of the state geometry.  </p>
+  <h4>Parameters</h4>
+  <p>None.</p>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/states]</li>
@@ -183,35 +279,22 @@
 </div>
 
 <div data-route="/validmlra">
-  <p>
-    Returns a list of valid Major Land Resource Area (MLRA) symbols.
-  </p>
-  <p>
-    This endpoint provides the set of MLRA identifiers available for lookup in the MLRA dataset.
-  </p>
+  <p>Returns a list of valid Major Land Resource Area (MLRA) symbols.</p>
+  <p>This endpoint provides the set of MLRA identifiers available for lookup in the MLRA dataset.</p>
+  <h4>Parameters</h4>
+  <p>None.</p>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/validmlra]</li>
   </ul>
 </div>
 
-<div data-route="/csb">
-  <p>
-    Returns USDA Crop Sequence Boundaries (CSB) metadata for the land cover history at a geographic point.
-  </p>
-  <p>
-    Note that CSB coverage is limited to areas classified as cropland in at least one year; locations outside mapped cropland will return no result.
-  </p>
-  <h4>Examples</h4>
-  <ul>
-    <li>$ANCHOR[/csb?lat=35.5&lon=-90.93]</li>
-  </ul>
-</div>
-
 <div data-route="/countylabels">
-  <p>
-    Returns county names and geographic coordinates suitable for map labels within a given state.
-  </p>
+  <p>Returns county names and geographic coordinates suitable for map labels within a given state.</p>
+  <h4>Parameters</h4>
+  <table><thead><tr><th>Parameter</th><th>Type</th><th>Requirement</th><th>Description</th></tr></thead><tbody>
+    <tr><td><code>state</code></td><td>string</td><td>Required</td><td>State postal abbreviation or full state name.</td></tr>
+  </tbody></table>
   <h4>Examples</h4>
   <ul>
     <li>$ANCHOR[/countylabels?state=GA]</li>

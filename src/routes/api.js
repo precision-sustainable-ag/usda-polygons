@@ -105,56 +105,38 @@ export default async function apiRoutes(app) {
     'Geographic Lookup Endpoints',
     'USDA Hardiness Zones by State',
     `
-      WITH selected_state AS MATERIALIZED (
-        SELECT geometry
-        FROM polygons.us_states
-        WHERE lower(state_code) = lower($1)
-          OR lower(state) = lower($1)
+      WITH zones AS (
+        SELECT zone, gridcode, geometry
+        FROM polygons.hardiness_zones_by_state
+        WHERE state_code = upper($1)
+          AND NULLIF($4::text, '') IS NULL
+
+        UNION ALL
+
+        SELECT zone, gridcode, geometry
+        FROM polygons.hardiness_zones_by_ecoregion
+        WHERE state_code = upper($1)
+          AND ecoregion_code = NULLIF($4::text, '')
       ),
-      selected_ecoregion AS MATERIALIZED (
+      simplified AS (
         SELECT
-          public.ST_UnaryUnion(
-            public.ST_Collect(e.geometry)
-          ) AS geometry
-        FROM polygons.ecoregions e
-        JOIN selected_state s
-          ON public.ST_Intersects(e.geometry, s.geometry)
-        WHERE e.ecoregion_code::text = NULLIF($4::text, '')
-      ),
-      region AS MATERIALIZED (
-        SELECT
+          zone,
+          gridcode,
           CASE
-            WHEN NULLIF($4::text, '') IS NULL THEN s.geometry
-            ELSE public.ST_Intersection(s.geometry, e.geometry)
-          END AS geometry
-        FROM selected_state s
-        CROSS JOIN selected_ecoregion e
-      ),
-      candidates AS MATERIALIZED (
-        SELECT
-          h.zone,
-          h.gridcode,
-          h.geometry
-        FROM polygons.hardiness_zones h
-        JOIN region r
-          ON h.geometry && r.geometry
-        AND public.ST_Intersects(h.geometry, r.geometry)
-      ),
-      clipped AS (
-        SELECT
-          c.zone,
-          c.gridcode,
-          public.ST_CollectionExtract(
-            public.ST_Intersection(c.geometry, r.geometry),
-            3
-          ) AS geom
-        FROM candidates c
-        CROSS JOIN region r
-      ),
-      eligible AS (
-        SELECT *
-        FROM clipped
-        WHERE NOT public.ST_IsEmpty(geom) AND public.ST_Area(geom::geography) >= 1000000
+            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0
+            THEN public.ST_Transform(
+              public.ST_SimplifyPreserveTopology(
+                public.ST_Transform(
+                  geometry,
+                  CASE WHEN upper($1) = 'AK' THEN 3338 ELSE 5070 END
+                ),
+                $3::float8
+              ),
+              public.ST_SRID(geometry)
+            )
+            ELSE geometry
+          END AS geom
+        FROM zones
       )
       SELECT
         zone,
@@ -162,23 +144,11 @@ export default async function apiRoutes(app) {
         public.Box2D(geom) AS bbox,
         CASE
           WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
-          THEN public.ST_AsText(
-            CASE
-              WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0
-              THEN public.ST_Transform(
-                public.ST_SimplifyPreserveTopology(
-                  public.ST_Transform(geom, 5070),
-                  NULLIF($3::text, '')::float8
-                ),
-                public.ST_SRID(geom)
-              )
-              ELSE geom
-            END
-          )
+            THEN public.ST_AsText(geom)
           ELSE NULL
         END AS polygon
-      FROM eligible
-      ORDER BY zone, gridcode
+      FROM simplified
+      ORDER BY zone, gridcode    
     `,
     {
       state: {
@@ -577,7 +547,7 @@ export default async function apiRoutes(app) {
     'Counties by state',
     `
       SELECT county FROM polygons.counties
-      WHERE state_code=$1
+      WHERE state_code = $1 OR state = $1
       ORDER BY county
     `,
     { state },
@@ -595,7 +565,7 @@ export default async function apiRoutes(app) {
         ST_X(ST_PointOnSurface(geometry)) AS lon,
         ST_Y(ST_PointOnSurface(geometry)) AS lat
       FROM polygons.counties
-      WHERE state_code = $1
+      WHERE state_code = $1 OR upper(state) = upper($1)
       ORDER BY county
     `,
     { state },
@@ -607,55 +577,41 @@ export default async function apiRoutes(app) {
     'Geographic Lookup Endpoints',
     'Ecoregions by State',
     `
-      WITH clipped AS (
-        SELECT
-          e.ecoregion_code,
-          e.ecoregion,
-          ST_Intersection(s.geometry, e.geometry) AS geom
-        FROM polygons.us_states s
-        JOIN polygons.ecoregions e
-          ON ST_Intersects(s.geometry, e.geometry)
-        WHERE lower(s.state_code) = lower($1) OR lower(s.state) = lower($1)
-      ),
-      eligible AS (
-        SELECT *
-        FROM clipped
-        WHERE NOT ST_IsEmpty(geom)
-          AND ST_Area(geom::geography) >= 1000000
-      ),
-      simplified AS (
-        SELECT
-          ecoregion_code,
-          ecoregion,
-          CASE
-            WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0 THEN
-              ST_Transform(
-                ST_SimplifyPreserveTopology(
-                  ST_Transform(geom, 5070),
-                  NULLIF($3::text, '')::float8
-                ),
-                ST_SRID(geom)
-              )
-            ELSE geom
-          END AS geom
-        FROM eligible
-      )
       SELECT
         ecoregion_code,
         ecoregion,
-        Box2D(geom) AS bbox,
+        public.Box2D(geometry) AS bbox,
         CASE
           WHEN COALESCE(NULLIF($2::text, '')::boolean, false)
-          THEN ST_AsText(ST_CollectionExtract(geom, 3))
+          THEN public.ST_AsText(
+            CASE
+              WHEN COALESCE(NULLIF($3::text, '')::float8, 0) > 0
+              THEN public.ST_Transform(
+                public.ST_SimplifyPreserveTopology(
+                  public.ST_Transform(
+                    geometry,
+                    CASE
+                      WHEN upper($1) = 'AK' THEN 3338
+                      ELSE 5070
+                    END
+                  ),
+                  $3::float8
+                ),
+                public.ST_SRID(geometry)
+              )
+              ELSE geometry
+            END
+          )
           ELSE NULL
         END AS polygon
-      FROM simplified
-      ORDER BY ecoregion_code, ecoregion
+      FROM polygons.ecoregions_by_state
+      WHERE state_code = upper($1)
+      ORDER BY ecoregion_code
     `,
     {
       state: {
         required: true,
-        examples: ['FL'],
+        examples: ['ID'],
         description: 'Two-letter state code or full state name',
       },
       polygon,
@@ -761,7 +717,7 @@ export default async function apiRoutes(app) {
           ELSE NULL
         END AS polygon
       FROM polygons.counties
-      WHERE state_code = $1
+      WHERE state_code = $1 OR upper(state) = upper($1)
       ORDER BY county
     `,
     { state, polygon },
