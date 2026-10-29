@@ -603,7 +603,9 @@ export default async function apiRoutes(app) {
             END
           )
           ELSE NULL
-        END AS polygon
+        END AS polygon,
+      ST_X(ST_PointOnSurface(geometry)) AS valid_lon,
+      ST_Y(ST_PointOnSurface(geometry)) AS valid_lat
       FROM polygons.ecoregions_by_state
       WHERE state_code = upper($1)
       ORDER BY ecoregion_code
