@@ -34,7 +34,7 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - script: |
-        cat >> /home/vsts/work/1/s/.env <<EOF
+        cat >> $(Build.SourcesDirectory)/.env <<EOF
         DB_HOST=$(DB_HOST)
         DB_DATABASE=$(DB_DATABASE)
         DB_PORT=$(DB_PORT)
